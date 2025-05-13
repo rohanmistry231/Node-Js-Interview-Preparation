@@ -1,0 +1,41 @@
+# Main Learning Points: CI/CD Pipelines
+# Automate testing and deployment with CI/CD pipelines.
+
+name: Node.js CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Run Tests
+      run: npm test
+
+    - name: Build Docker Image
+      run: docker build -t my-node-app .
+
+# To use this in a Node.js environment:
+# 1. Initialize a project: npm init -y
+# 2. Install Express: npm install express
+# 3. Save app.js and Dockerfile in the project directory
+# 4. Add a test script in package.json: "test": "echo \"Running tests\" && exit 0"
+# 5. Create a .github/workflows directory in your repo
+# 6. Save this file as .github/workflows/github-actions.yml
+# 7. Push to GitHub; the pipeline will run automatically on push or pull request to main
+# Note: This pipeline won't execute here as it requires GitHub Actions.

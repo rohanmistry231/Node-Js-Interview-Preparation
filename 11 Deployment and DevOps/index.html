@@ -1,0 +1,106 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node.js Deployment and DevOps Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        pre { background-color: #f4f4f4; padding: 10px; border-radius: 5px; }
+        div { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Node.js Deployment and DevOps Demo</h1>
+        <p>
+            The following code examples demonstrate deployment and DevOps techniques in Node.js. Since Node.js cannot be executed in this browser environment
+            and network calls are restricted, you'll need to run these in a Node.js runtime with appropriate tools (Docker, PM2, etc.). Follow the instructions in each file.
+        </p>
+
+        <h2>Application Code: Express App</h2>
+        <pre id="app"></pre>
+
+        <h2>1. Environment Variables</h2>
+        <pre id="env-config"></pre>
+
+        <h2>2. PM2 for Process Management</h2>
+        <pre id="pm2-config"></pre>
+
+        <h2>3. Dockerizing Node.js Apps</h2>
+        <pre id="dockerfile"></pre>
+
+        <h2>4. CI/CD Pipelines</h2>
+        <pre id="github-actions"></pre>
+
+        <h2>5. Cloud Deployment (AWS, Heroku, Vercel)</h2>
+        <pre id="cloud-deployment"></pre>
+
+        <h2>6. Logging and Monitoring</h2>
+        <pre id="logging-monitoring"></pre>
+    </div>
+
+    <!-- Load the code files as text for display -->
+    <script>
+        // Function to fetch and display code
+        const displayCode = (id, file) => {
+            fetch(file)
+                .then(response => response.text())
+                .then(text => {
+                    document.getElementById(id).textContent = text;
+                })
+                .catch(error => {
+                    document.getElementById(id).textContent = 'Error loading file: ' + error;
+                });
+        };
+
+        // Display each file's content
+        displayCode('app', 'app.js');
+        displayCode('env-config', 'envConfig.js');
+        displayCode('pm2-config', 'pm2Config.js');
+        displayCode('dockerfile', 'Dockerfile');
+        displayCode('github-actions', 'github-actions.yml');
+        displayCode('cloud-deployment', 'cloudDeployment.md');
+        displayCode('logging-monitoring', 'loggingMonitoring.js');
+    </script>
+</body>
+</html>
