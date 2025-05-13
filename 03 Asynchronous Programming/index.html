@@ -1,0 +1,98 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node.js Asynchronous Programming Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        pre { background-color: #f4f4f4; padding: 10px; border-radius: 5px; }
+        div { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Node.js Asynchronous Programming Demo</h1>
+        <p>
+            The following code examples demonstrate asynchronous programming in Node.js. Since Node.js cannot be executed in this browser environment,
+            you'll need to run these files in a Node.js runtime. Follow the instructions in each file to execute them using the Node.js CLI.
+        </p>
+
+        <h2>1. Callbacks</h2>
+        <pre id="callbacks"></pre>
+
+        <h2>2. Promises</h2>
+        <pre id="promises"></pre>
+
+        <h2>3. Async/Await</h2>
+        <pre id="async-await"></pre>
+
+        <h2>4. Event Emitters</h2>
+        <pre id="event-emitters"></pre>
+
+        <h2>5. Handling Asynchronous Errors</h2>
+        <pre id="async-errors"></pre>
+    </div>
+
+    <!-- Load the code files as text for display -->
+    <script>
+        // Function to fetch and display code
+        const displayCode = (id, file) => {
+            fetch(file)
+                .then(response => response.text())
+                .then(text => {
+                    document.getElementById(id).textContent = text;
+                })
+                .catch(error => {
+                    document.getElementById(id).textContent = 'Error loading file: ' + error;
+                });
+        };
+
+        // Display each file's content
+        displayCode('callbacks', 'Callbacks.js');
+        displayCode('promises', 'Promises.js');
+        displayCode('async-await', 'AsyncAwait.js');
+        displayCode('event-emitters', 'EventEmitters.js');
+        displayCode('async-errors', 'AsyncErrors.js');
+    </script>
+</body>
+</html>
